@@ -5,12 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import works.weave.socks.cart.cart.CartDAO;
-import works.weave.socks.cart.cart.CartResource;
 import works.weave.socks.cart.entities.Item;
 import works.weave.socks.cart.item.FoundItem;
-import works.weave.socks.cart.item.ItemDAO;
-import works.weave.socks.cart.item.ItemResource;
+import works.weave.socks.cart.repositories.ItemRepository;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,11 +20,10 @@ public class ItemsController {
     private final Logger LOG = getLogger(getClass());
 
     @Autowired
-    private ItemDAO itemDAO;
+    ItemRepository itemRepository;
+
     @Autowired
-    private CartsController cartsController;
-    @Autowired
-    private CartDAO cartDAO;
+    CartsController cartsController;
 
     @ResponseStatus(HttpStatus.OK)
     @RequestMapping(value = "/{itemId:.*}", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
@@ -38,7 +34,7 @@ public class ItemsController {
     @ResponseStatus(HttpStatus.OK)
     @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public List<Item> getItems(@PathVariable String customerId) {
-        return cartsController.get(customerId).contents();
+        return cartsController get(customerId).contents();
     }
 
     @ResponseStatus(HttpStatus.CREATED)

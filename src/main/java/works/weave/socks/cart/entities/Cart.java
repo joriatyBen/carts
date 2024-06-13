@@ -1,70 +1,58 @@
 package works.weave.socks.cart.entities;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
+import jakarta.persistence.*;
+
+import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
-@Document
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "orders")
 public class Cart {
-    @NotNull
-    public String customerId; // Public instead of getters/setters.
-    @Id
-    private String id;
-    @DBRef
-    private List<Item> items = new ArrayList<>();
 
-    public Cart(String customerId) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    @Column(name = "timestamp_order_request")
+    private Date orderRequest;
+
+    @Column(name = "product_sum")
+    private String products;
+
+    @Column(name = "total_order")
+    private int orderPrice;
+
+    @Column(name = "customer_id")
+    private int customerId;
+
+    @Column(name = "order_state")
+    private String state;
+
+
+    public Cart(int customerId) {
         this.customerId = customerId;
     }
 
-    public Cart() {
-        this(null);
+    public String contents() {
+        return products;
     }
 
-    public List<Item> contents() {
-        return items;
-    }
-
-    public Cart add(Item item) {
-        items.add(item);
-        return this;
-    }
-
-    public Cart remove(Item item) {
-        items.remove(item);
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "Cart{" +
-                "id='" + id + '\'' +
-                ", customerId='" + customerId + '\'' +
-                ", items=" + items +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Cart cart = (Cart) o;
-
-        if (customerId != null ? !customerId.equals(cart.customerId) : cart.customerId != null) return false;
-        if (id != null ? !id.equals(cart.id) : cart.id != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = customerId != null ? customerId.hashCode() : 0;
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        return result;
-    }
+    // That functionality is not implemented in the backend
+    // public Cart add(Item item) {
+    //     items.add(item);
+    //     return this;
+    // }
+    //
+    // public Cart remove(Item item) {
+    //     items.remove(item);
+    //     return this;
+    // }
 }
