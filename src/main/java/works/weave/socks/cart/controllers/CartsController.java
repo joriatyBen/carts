@@ -35,16 +35,12 @@ public class CartsController {
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @RequestMapping(value = "/{customerId}", method = RequestMethod.DELETE)
-    public ResponseEntity<HttpStatus> deleteOrderByCustomerId (@PathVariable int customerId) {
+    public ResponseEntity<Void> deleteOrderByCustomerId (@PathVariable int customerId) {
         try {
-            cartRepository.deleteAllByIdInBatch(
-                cartRepository.findByCustomerId(customerId)
-                    .stream()
-                    .map(Cart::getCustomerId)
-                    .collect(Collectors.toList())
-            );
+            cartRepository.deleteByCustomerId(customerId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
