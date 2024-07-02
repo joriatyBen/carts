@@ -1,58 +1,59 @@
 package works.weave.socks.cart.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import jakarta.persistence.*;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@Table(name = "orders")
+@Table(name = "order_details")
 public class Cart {
+  @Id
+  //@GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_details_id_seq")
+  @SequenceGenerator(name = "order_details_id_seq", sequenceName = "order_details_id_seq", allocationSize = 1)
+  @Column(name = "id")
+  private int id;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+  @Column(name = "timestamp_created")
+  private Date orderRequest;
 
-    @Column(name = "timestamp_order_request")
-    private Date orderRequest;
+  @Column(name = "total_products")
+  private String items;
 
-    @Column(name = "product_sum")
-    private String products;
+  @Column(name = "total_price")
+  private int totalOrderPrice;
 
-    @Column(name = "total_order")
-    private int orderPrice;
+  @Column(name = "customer_id")
+  private int customerId;
 
-    @Column(name = "customer_id")
-    private int customerId;
+  @Column(name = "order_state")
+  private String orderState;
 
-    @Column(name = "order_state")
-    private String state;
+  public Cart() {
+  }
 
+  public Cart(Date orderRequest, String items, int totalOrderPrice, int customerId, String orderState) {
+    this.orderRequest = orderRequest;
+    this.items = items;
+    this.totalOrderPrice = totalOrderPrice;
+    this.customerId = customerId;
+    this.orderState = orderState;
+  }
 
-    public Cart(int customerId) {
-        this.customerId = customerId;
-    }
+  public String contents() {
+    return items;
+  }
 
-    public String contents() {
-        return products;
-    }
+  // for fn merge needed only, which is currently not implemented
+  public Cart add(Item item) {
+    return null;
+  }
 
-    // That functionality is not implemented in the backend
-    // public Cart add(Item item) {
-    //     items.add(item);
-    //     return this;
-    // }
-    //
-    // public Cart remove(Item item) {
-    //     items.remove(item);
-    //     return this;
-    // }
+  public Cart remove(Item item) {
+    return null;
+  }
 }
