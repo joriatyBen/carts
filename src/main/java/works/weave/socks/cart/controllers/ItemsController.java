@@ -1,14 +1,10 @@
 package works.weave.socks.cart.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import works.weave.socks.cart.entities.Item;
 import works.weave.socks.cart.entities.ItemDTO;
 import works.weave.socks.cart.item.FoundItem;
 import works.weave.socks.cart.repositories.CartItemsRepository;
@@ -20,7 +16,6 @@ import works.weave.socks.cart.item.ItemResource;
 import java.time.LocalTime;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -61,23 +56,25 @@ public class ItemsController {
   public List<ItemDTO> addToCart(@PathVariable int customerId, @RequestBody ItemDTO.CheckoutRequest checkoutRequest) {
     LocalTime startTime = LocalTime.now(); // use this somehow
 
-    //first check if customer id is existing in database
-
     // multiple orders can be assigned to one customer number - the check for an existing item is therefore useless
     //FoundItem foundItem = new FoundItem(() -> getItems(customerId), () -> null, () -> checkoutRequest);
 
+    Optional.of(customerRepository.findById(customerId).isEmpty())
+            .filter(isEmpty -> isEmpty)
+            .ifPresent(isEmpty -> {
+              LOG.warn("Customer not found with customerId: {}", customerId);
+            });
+
+
     /* insert into oder_details(Cart), oder_items(CartItems) and update/insert customer
      * subsequently return the incoming request mapped to an itemDTO */
-    Supplier<List<ItemDTO>> newItem = new ItemResource(
-            cartRepository,
-            cartItemsRepository,
-            customerRepository,
-            itemRepository,
-            customerId,
-            () -> checkoutRequest).create();
-    LOG.debug("Did not find item(s). Creating item for user: {}, {}", customerId, newItem.get());
-
-    return newItem.get();
+    return new ItemResource(
+              cartRepository,
+              cartItemsRepository,
+              customerRepository,
+              itemRepository,
+              customerId,
+              () -> checkoutRequest).create().get();
   }
 
 //  @ResponseStatus(HttpStatus.ACCEPTED)

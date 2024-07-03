@@ -19,5 +19,5 @@ public interface CartRepository extends JpaRepository<Cart, Integer> {
   @Query("delete from Cart c where c.customerId = ?1")
   void deleteByCustomerId(int customerId);
 
-  int getIdByCustomerId(@Param("customer_id") int customerId);
+  Cart getCartByCustomerId(@Param("customer_id") int customerId);
 }

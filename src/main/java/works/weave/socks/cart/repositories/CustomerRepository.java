@@ -9,4 +9,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
   default Customer updateOrInsert(Customer customer) {
     return save(customer);
   }
+
+  Customer findCustomerByNameAndEmail(String name, String email);
 }

@@ -60,14 +60,20 @@ public class ItemResource implements Resource<List<ItemDTO>> {
               startTime,
               productsAsString.toString(),
               checkoutRequest.get().getOrderTotal(),
-              customerId,
+              customerRepository.findCustomerByNameAndEmail(
+                      checkoutRequest.get().getCustomer().getName(),
+                      checkoutRequest.get().getCustomer().getEmail()).getId(),
               checkoutRequest.get().getOrderState()
       ));
 
       for (ItemDTO.CheckoutItem entry: checkoutRequest.get().getCheckout()) {
         cartItemsRepository.save(new CartItems(
+                cartRepository.getCartByCustomerId(
+                        customerRepository.findCustomerByNameAndEmail(
+                                checkoutRequest.get().getCustomer().getName(),
+                                checkoutRequest.get().getCustomer().getEmail()).getId()
+                ).getId(),
                 entry.getId(),
-                cartRepository.getIdByCustomerId(customerId),
                 entry.getQuantity(),
                 startTime
         ));
@@ -77,7 +83,9 @@ public class ItemResource implements Resource<List<ItemDTO>> {
               cartRepository,
               cartItemsRepository,
               itemRepository,
-              customerId).value().get();
+              customerRepository.findCustomerByNameAndEmail(
+                      checkoutRequest.get().getCustomer().getName(),
+                      checkoutRequest.get().getCustomer().getEmail()).getId()).value().get();
 
     };
   }
