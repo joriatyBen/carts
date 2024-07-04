@@ -1,11 +1,9 @@
-package works.weave.socks.cart.cart;
+package works.weave.socks.cart.itemDTO;
 
 import java.util.function.Supplier;
 
 public interface Resource<T> {
-  Runnable destroy();
+  Supplier<T> create();
 
   Supplier<T> value();
-
-  Supplier<T> create();
 }

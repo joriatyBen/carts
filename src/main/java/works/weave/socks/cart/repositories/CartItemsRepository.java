@@ -5,17 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import works.weave.socks.cart.entities.Cart;
+import works.weave.socks.cart.entities.CartItems;
 
 import java.util.List;
 
 @Transactional
-public interface CartRepository extends JpaRepository<Cart, Integer> {
-  List<Cart> findByCustomerId(@Param("customer_id") int id);
+public interface CartItemsRepository extends JpaRepository<CartItems, Integer> {
+  List<CartItems> findByOrderId(@Param("order_id") int orderId);
 
   @Modifying
-  @Query("delete from Cart c where c.customerId = ?1")
-  void deleteByCustomerId(int customerId);
-
-  Cart getCartByCustomerId(@Param("customer_id") int customerId);
+  @Query("delete from CartItems ci where ci.orderId = ?1")
+  void deleteByOrderId(int orderId);
 }

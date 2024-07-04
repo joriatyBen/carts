@@ -1,46 +1,34 @@
 package works.weave.socks.cart.cart;
 
-import works.weave.socks.cart.action.FirstResultOrDefault;
+import lombok.AllArgsConstructor;
 import works.weave.socks.cart.entities.Cart;
+import works.weave.socks.cart.repositories.*;
 
 import java.util.function.Supplier;
 
-public class CartResource implements Resource<Cart>, HasContents<CartContentsResource> {
-    private final CartDAO cartRepository;
-    private final String customerId;
+@AllArgsConstructor
+public class CartResource implements Resource<Cart> {
+  private final CartRepository cartRepository;
+  private final CartItemsRepository cartItemsRepository;
+  private final int customerId;
 
-    public CartResource(CartDAO cartRepository, String customerId) {
-        this.cartRepository = cartRepository;
-        this.customerId = customerId;
-    }
+  @Override
+  public Runnable destroy() {
+    return () -> {
+      cartRepository.findByCustomerId(customerId)
+              .stream().map(Cart::getId).toList()
+              .forEach(cartItemsRepository::deleteByOrderId);
+      cartRepository.deleteByCustomerId(customerId);
+    };
+  }
 
-    @Override
-    public Runnable destroy() {
-        return () -> cartRepository.delete(value().get());
-    }
+  @Override
+  public Supplier<Cart> value() {
+    return null;
+  }
 
-    @Override
-    public Supplier<Cart> create() {
-        return () -> cartRepository.save(new Cart(customerId));
-    }
-
-    @Override
-    public Supplier<Cart> value() {
-        return new FirstResultOrDefault<>(
-                cartRepository.findByCustomerId(customerId),
-                () -> {
-                    create().get();
-                    return value().get();
-                });
-    }
-
-    @Override
-    public Runnable merge(Cart toMerge) {
-        return () -> toMerge.contents().forEach(item -> contents().get().add(() -> item).run());
-    }
-
-    @Override
-    public Supplier<CartContentsResource> contents() {
-        return () -> new CartContentsResource(cartRepository, () -> this);
-    }
+  @Override
+  public Supplier<Cart> create() {
+    return () -> cartRepository.save(new Cart(customerId));
+  }
 }

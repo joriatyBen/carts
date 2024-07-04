@@ -5,79 +5,96 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import works.weave.socks.cart.cart.CartDAO;
-import works.weave.socks.cart.cart.CartResource;
-import works.weave.socks.cart.entities.Item;
+import works.weave.socks.cart.entities.ItemDTO;
 import works.weave.socks.cart.item.FoundItem;
-import works.weave.socks.cart.item.ItemDAO;
+import works.weave.socks.cart.repositories.CartItemsRepository;
+import works.weave.socks.cart.repositories.CartRepository;
+import works.weave.socks.cart.repositories.CustomerRepository;
+import works.weave.socks.cart.repositories.ItemRepository;
 import works.weave.socks.cart.item.ItemResource;
 
-import java.util.List;
-import java.util.function.Supplier;
+import java.time.LocalTime;
+
+import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 @RestController
 @RequestMapping(value = "/carts/{customerId:.*}/items")
 public class ItemsController {
-    private final Logger LOG = getLogger(getClass());
+  private final Logger LOG = getLogger(getClass());
 
-    @Autowired
-    private ItemDAO itemDAO;
-    @Autowired
-    private CartsController cartsController;
-    @Autowired
-    private CartDAO cartDAO;
+  @Autowired
+  ItemRepository itemRepository;
 
-    @ResponseStatus(HttpStatus.OK)
-    @RequestMapping(value = "/{itemId:.*}", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public Item get(@PathVariable String customerId, @PathVariable String itemId) {
-        return new FoundItem(() -> getItems(customerId), () -> new Item(itemId)).get();
-    }
+  @Autowired
+  CartRepository cartRepository;
 
-    @ResponseStatus(HttpStatus.OK)
-    @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public List<Item> getItems(@PathVariable String customerId) {
-        return cartsController.get(customerId).contents();
-    }
+  @Autowired
+  CartItemsRepository cartItemsRepository;
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-    public Item addToCart(@PathVariable String customerId, @RequestBody Item item) {
-        // If the item does not exist in the cart, create new one in the repository.
-        FoundItem foundItem = new FoundItem(() -> cartsController.get(customerId).contents(), () -> item);
-        if (!foundItem.hasItem()) {
-            Supplier<Item> newItem = new ItemResource(itemDAO, () -> item).create();
-            LOG.debug("Did not find item. Creating item for user: " + customerId + ", " + newItem.get());
-            new CartResource(cartDAO, customerId).contents().get().add(newItem).run();
-            return item;
-        } else {
-            Item newItem = new Item(foundItem.get(), foundItem.get().quantity() + 1);
-            LOG.debug("Found item in cart. Incrementing for user: " + customerId + ", " + newItem);
-            updateItem(customerId, newItem);
-            return newItem;
-        }
-    }
+  @Autowired
+  CustomerRepository customerRepository;
 
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    @RequestMapping(value = "/{itemId:.*}", method = RequestMethod.DELETE)
-    public void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
-        FoundItem foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
-        Item item = foundItem.get();
+  @Autowired
+  CartsController cartsController;
 
-        LOG.debug("Removing item from cart: " + item);
-        new CartResource(cartDAO, customerId).contents().get().delete(() -> item).run();
+  @ResponseStatus(HttpStatus.OK)
+  @RequestMapping(value = "/{itemId:.*}", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+  public ItemDTO get(@PathVariable int customerId, @PathVariable int itemId) {
+    return new FoundItem(() -> getItems(customerId), () -> new ItemDTO(itemId), () -> null).get();
+  }
 
-        LOG.debug("Removing item from repository: " + item);
-        new ItemResource(itemDAO, () -> item).destroy().run();
-    }
+  @ResponseStatus(HttpStatus.OK)
+  @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+  public List<ItemDTO> getItems(@PathVariable int customerId) {
+    return cartsController.getOrdersByCustomerId(customerId).getBody();
+  }
 
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PATCH)
-    public void updateItem(@PathVariable String customerId, @RequestBody Item item) {
-        // Merge old and new items
-        ItemResource itemResource = new ItemResource(itemDAO, () -> get(customerId, item.itemId()));
-        LOG.debug("Merging item in cart for user: " + customerId + ", " + item);
-        itemResource.merge(item).run();
-    }
+  @ResponseStatus(HttpStatus.CREATED)
+  @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+  public List<ItemDTO> addToCart(@PathVariable int customerId, @RequestBody ItemDTO.CheckoutRequest checkoutRequest) {
+    LocalTime startTime = LocalTime.now(); // use this somehow
+
+    // multiple orders can be assigned to one customer number - the check for an existing item is therefore useless
+    //FoundItem foundItem = new FoundItem(() -> getItems(customerId), () -> null, () -> checkoutRequest);
+
+    Optional.of(customerRepository.findById(customerId).isEmpty())
+            .filter(isEmpty -> isEmpty)
+            .ifPresent(isEmpty -> {
+              LOG.warn("Customer not found with customerId: {}", customerId);
+            });
+
+
+    /* insert into oder_details(Cart), oder_items(CartItems) and update/insert customer
+     * subsequently return the incoming request mapped to an itemDTO */
+    return new ItemResource(
+              cartRepository,
+              cartItemsRepository,
+              customerRepository,
+              itemRepository,
+              () -> checkoutRequest).create().get();
+  }
+
+//  @ResponseStatus(HttpStatus.ACCEPTED)
+//  @RequestMapping(value = "/{itemId:.*}", method = RequestMethod.DELETE)
+//  public void removeItem(@PathVariable String customerId, @PathVariable String itemId) {
+//    FoundItem foundItem = new FoundItem(() -> getItems(customerId), () -> new Item(itemId));
+//    Item item = foundItem.get();
+//
+//    LOG.debug("Removing item from cart: " + item);
+//    new CartResource(cartDAO, customerId).contents().get().delete(() -> item).run();
+//
+//    LOG.debug("Removing item from repository: " + item);
+//    new ItemResource(itemDAO, () -> item).destroy().run();
+//  }
+//
+//  @ResponseStatus(HttpStatus.ACCEPTED)
+//  @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PATCH)
+//  public void updateItem(@PathVariable String customerId, @RequestBody Item item) {
+//    // Merge old and new items
+//    ItemResource itemResource = new ItemResource(itemDAO, () -> get(customerId, item.itemId()));
+//    LOG.debug("Merging item in cart for user: " + customerId + ", " + item);
+//    itemResource.merge(item).run();
+//  }
 }

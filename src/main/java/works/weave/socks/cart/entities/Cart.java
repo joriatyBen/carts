@@ -1,70 +1,61 @@
 package works.weave.socks.cart.entities;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.*;
 
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 
-@Document
+import java.util.Date;
+
+@Entity
+@Getter
+@Setter
+@Table(name = "order_details")
 public class Cart {
-    @NotNull
-    public String customerId; // Public instead of getters/setters.
-    @Id
-    private String id;
-    @DBRef
-    private List<Item> items = new ArrayList<>();
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_details_id_seq")
+  @SequenceGenerator(name = "order_details_id_seq", sequenceName = "order_details_id_seq", allocationSize = 1)
+  @Column(name = "id")
+  private int id;
 
-    public Cart(String customerId) {
-        this.customerId = customerId;
-    }
+  @Column(name = "timestamp_created")
+  private Date orderRequest;
 
-    public Cart() {
-        this(null);
-    }
+  @Column(name = "total_products")
+  private String items;
 
-    public List<Item> contents() {
-        return items;
-    }
+  @Column(name = "total_price")
+  private int totalOrderPrice;
 
-    public Cart add(Item item) {
-        items.add(item);
-        return this;
-    }
+  @Column(name = "customer_id")
+  private int customerId;
 
-    public Cart remove(Item item) {
-        items.remove(item);
-        return this;
-    }
+  @Column(name = "order_state")
+  private String orderState;
 
-    @Override
-    public String toString() {
-        return "Cart{" +
-                "id='" + id + '\'' +
-                ", customerId='" + customerId + '\'' +
-                ", items=" + items +
-                '}';
-    }
+  public Cart() {
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  public Cart(Date orderRequest, String items, int totalOrderPrice, int customerId, String orderState) {
+    this.orderRequest = orderRequest;
+    this.items = items;
+    this.totalOrderPrice = totalOrderPrice;
+    this.customerId = customerId;
+    this.orderState = orderState;
+  }
 
-        Cart cart = (Cart) o;
+  public Cart(int customerId) {
+  }
 
-        if (customerId != null ? !customerId.equals(cart.customerId) : cart.customerId != null) return false;
-        if (id != null ? !id.equals(cart.id) : cart.id != null) return false;
+  public String contents() {
+    return items;
+  }
 
-        return true;
-    }
+  // for fn merge needed only, which is currently not implemented
+  public Cart add(Item item) {
+    return null;
+  }
 
-    @Override
-    public int hashCode() {
-        int result = customerId != null ? customerId.hashCode() : 0;
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        return result;
-    }
+  public Cart remove(Item item) {
+    return null;
+  }
 }
