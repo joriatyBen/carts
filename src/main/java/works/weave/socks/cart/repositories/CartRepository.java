@@ -13,8 +13,6 @@ import java.util.List;
 public interface CartRepository extends JpaRepository<Cart, Integer> {
   List<Cart> findByCustomerId(@Param("customer_id") int id);
 
-  List<Cart> findProductsByCustomerId(@Param("customer_id") int id);
-
   @Modifying
   @Query("delete from Cart c where c.customerId = ?1")
   void deleteByCustomerId(int customerId);

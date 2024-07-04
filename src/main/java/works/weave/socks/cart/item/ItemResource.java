@@ -20,7 +20,6 @@ public class ItemResource implements Resource<List<ItemDTO>> {
   private final CartItemsRepository cartItemsRepository;
   private final CustomerRepository customerRepository;
   private final ItemRepository itemRepository;
-  private final int customerId;
   private final Supplier<ItemDTO.CheckoutRequest> checkoutRequest;
 
   @Override
@@ -46,15 +45,23 @@ public class ItemResource implements Resource<List<ItemDTO>> {
     );
 
     return () -> {
-      customerRepository.updateOrInsert(new Customer(
+      // Check if the customer already exists
+      Customer existingCustomer = customerRepository.findCustomerByNameAndEmail(
               checkoutRequest.get().getCustomer().getName(),
-              checkoutRequest.get().getCustomer().getEmail(),
-              checkoutRequest.get().getCustomer().getPhone(),
-              checkoutRequest.get().getCustomer().getAddress(),
-              checkoutRequest.get().getCustomer().getCity(),
-              checkoutRequest.get().getCustomer().getPin(),
-              startTime
-      ));
+              checkoutRequest.get().getCustomer().getEmail());
+
+      if (existingCustomer == null) {
+        // Insert new customer if not exists
+        customerRepository.updateOrInsert(new Customer(
+                checkoutRequest.get().getCustomer().getName(),
+                checkoutRequest.get().getCustomer().getEmail(),
+                checkoutRequest.get().getCustomer().getPhone(),
+                checkoutRequest.get().getCustomer().getAddress(),
+                checkoutRequest.get().getCustomer().getCity(),
+                checkoutRequest.get().getCustomer().getPin(),
+                startTime
+        ));
+      }
 
       cartRepository.save(new Cart(
               startTime,

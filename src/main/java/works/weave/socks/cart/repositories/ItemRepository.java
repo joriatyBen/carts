@@ -9,7 +9,6 @@ import works.weave.socks.cart.entities.Item;
 @RepositoryRestResource
 @Transactional
 public interface ItemRepository extends JpaRepository<Item, String> {
-  Item findByName(@Param("name") String name);
   Item findById(@Param("id") int id);
 
 

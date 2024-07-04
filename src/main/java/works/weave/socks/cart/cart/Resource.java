@@ -6,4 +6,6 @@ public interface Resource<T> {
   Runnable destroy();
 
   Supplier<T> value();
+
+  Supplier<T> create();
 }

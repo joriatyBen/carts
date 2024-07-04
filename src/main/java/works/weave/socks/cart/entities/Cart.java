@@ -12,7 +12,6 @@ import java.util.Date;
 @Table(name = "order_details")
 public class Cart {
   @Id
-  //@GeneratedValue(strategy = GenerationType.AUTO)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_details_id_seq")
   @SequenceGenerator(name = "order_details_id_seq", sequenceName = "order_details_id_seq", allocationSize = 1)
   @Column(name = "id")
@@ -42,6 +41,9 @@ public class Cart {
     this.totalOrderPrice = totalOrderPrice;
     this.customerId = customerId;
     this.orderState = orderState;
+  }
+
+  public Cart(int customerId) {
   }
 
   public String contents() {

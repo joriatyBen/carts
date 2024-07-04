@@ -12,7 +12,6 @@ import java.util.Date;
 @Table(name = "customers")
 public class Customer {
   @Id
-  //@GeneratedValue(strategy = GenerationType.AUTO)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customers_id_seq")
   @SequenceGenerator(name = "customers_id_seq", sequenceName = "customers_id_seq", allocationSize = 1)
   @Column(name = "id")

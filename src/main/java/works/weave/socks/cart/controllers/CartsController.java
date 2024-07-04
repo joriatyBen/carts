@@ -33,10 +33,15 @@ public class CartsController {
   @RequestMapping(value = "/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
   public ResponseEntity<List<ItemDTO>> getOrdersByCustomerId(@PathVariable int customerId) {
     try {
-      List<ItemDTO> orderItems = new ItemDTOResource(cartRepository, cartItemsRepository, itemRepository, customerId).value().get();
+      List<ItemDTO> orderItems = new ItemDTOResource(
+              cartRepository,
+              cartItemsRepository,
+              itemRepository,
+              customerId).value().get();
       LOG.debug("Found {} ordered items for customer {} in db.", orderItems.size(), customerId);
       return new ResponseEntity<>(orderItems, HttpStatus.OK);
     } catch (Exception e) {
+      e.printStackTrace();
       return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -45,10 +50,10 @@ public class CartsController {
   @RequestMapping(value = "/{customerId}", method = RequestMethod.DELETE)
   public ResponseEntity<Void> deleteOrderByCustomerId(@PathVariable int customerId) {
     try {
-      new CartResource(cartRepository, cartItemsRepository).destroy().run();
+      new CartResource(cartRepository, cartItemsRepository, customerId).destroy().run();
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
-      //e.printStackTrace();
+      e.printStackTrace();
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

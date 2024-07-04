@@ -14,7 +14,6 @@ import java.util.Objects;
 @Table(name = "product_details")
 public class Item {
   @Id
-  //@GeneratedValue(strategy = GenerationType.AUTO)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_details_id_seq")
   @SequenceGenerator(name = "product_details_id_seq", sequenceName = "product_details_id_seq", allocationSize = 1)
   @Column(name = "id")

@@ -73,7 +73,6 @@ public class ItemsController {
               cartItemsRepository,
               customerRepository,
               itemRepository,
-              customerId,
               () -> checkoutRequest).create().get();
   }
 

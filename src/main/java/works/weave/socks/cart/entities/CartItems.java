@@ -11,7 +11,6 @@ import java.util.Date;
 @Table(name = "order_items")
 public class CartItems {
   @Id
-  //@GeneratedValue(strategy = GenerationType.AUTO)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_items_id_seq")
   @SequenceGenerator(name = "order_items_id_seq", sequenceName = "order_items_id_seq", allocationSize = 1)
 

@@ -7,17 +7,18 @@ import works.weave.socks.cart.repositories.*;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class CartResource implements Resource<Cart>, HasContents<CartContentsResource> {
+public class CartResource implements Resource<Cart> {
   private final CartRepository cartRepository;
   private final CartItemsRepository cartItemsRepository;
+  private final int customerId;
 
   @Override
   public Runnable destroy() {
     return () -> {
-      cartRepository.findByCustomerId(value().get().getCustomerId())
+      cartRepository.findByCustomerId(customerId)
               .stream().map(Cart::getId).toList()
               .forEach(cartItemsRepository::deleteByOrderId);
-      cartRepository.deleteByCustomerId(value().get().getCustomerId());
+      cartRepository.deleteByCustomerId(customerId);
     };
   }
 
@@ -27,7 +28,7 @@ public class CartResource implements Resource<Cart>, HasContents<CartContentsRes
   }
 
   @Override
-  public Supplier<CartContentsResource> contents() {
-    return null;
+  public Supplier<Cart> create() {
+    return () -> cartRepository.save(new Cart(customerId));
   }
 }

@@ -7,7 +7,6 @@ import java.util.Optional;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class ItemDTO {
   private Optional<Integer> customerId;
   private Optional<Integer> orderId;
@@ -17,6 +16,14 @@ public class ItemDTO {
 
   public ItemDTO(int itemId) {
     this.itemId = itemId;
+  }
+
+  public ItemDTO(Optional<Integer> customerId, Optional<Integer> orderId, int itemId, int itemQuantity, int unitPrice) {
+    this.customerId = customerId;
+    this.orderId = orderId;
+    this.itemId = itemId;
+    this.itemQuantity = itemQuantity;
+    this.unitPrice = unitPrice;
   }
 
   @Getter
